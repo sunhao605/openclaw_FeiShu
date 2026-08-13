@@ -3,6 +3,82 @@
 Telegraph style. Root rules only. Read scoped `AGENTS.md` before subtree work.
 Skills own workflows; root owns hard policy and routing. Product direction and merge scope: `VISION.md`.
 
+## 项目架构与本地启动
+
+### 项目架构
+
+- OpenClaw 是一个使用 pnpm workspace 管理的 TypeScript ESM monorepo。
+- 后端与控制平面位于 `src/**`。常驻的 Gateway 统一负责模型提供商、会话、工具、消息渠道、定时任务、健康检查，以及类型化的 WebSocket/HTTP API。默认监听地址为 `127.0.0.1:18789`。
+- 前端位于 `ui/**`，技术栈为 Vite + Lit。开发服务器默认使用 `127.0.0.1:5173`；生产资源构建到 `dist/control-ui`，由 Gateway 通过 `18789` 端口提供服务。
+- 共享库与协议位于 `packages/**`；Gateway 协议位于 `packages/gateway-protocol/**`。
+- 插件位于 `extensions/**`。核心代码保持与具体插件解耦；插件只能通过公开的 plugin SDK、manifest 和运行时接口接入核心。
+- 原生应用及客户端位于 `apps/**`；项目文档位于 `docs/**`；测试位于 `test/**` 及与源码同目录的 `*.test.ts` 文件。
+- 根目录规则适用于整个仓库。修改子目录前，必须读取距离目标文件最近的 `AGENTS.md`；更深层目录中的规则优先于本文件。
+
+### 本地开发环境
+
+- 推荐的源码开发环境：Node `24.15.0+`，以及 `packageManager` 指定的 pnpm `11.15.1`。
+- 支持的 Node 版本范围：`22.22.3+ <23`、`24.15.0+ <25` 或 `25.9.0+`；依赖工具链支持时推荐使用 Node 26。
+- 只能使用 pnpm。未经批准，不得更换包管理器，也不得使用 npm/yarn 重新生成锁文件。
+- Docker 为可选项；常规源码开发流程直接运行于 Node.js。
+- 本地配置、凭据、token 和运行时状态不得提交到 Git。严禁在日志或回复中输出敏感信息。
+
+### 安装依赖与首次初始化
+
+```bash
+pnpm install
+pnpm openclaw onboard
+```
+
+如只需以非交互方式初始化最小工作区和配置，且暂不进行模型提供商认证，可执行：
+
+```bash
+pnpm openclaw setup --baseline
+```
+
+### 启动后端（Gateway）
+
+推荐使用以下热更新方式启动：
+
+```bash
+pnpm gateway:watch
+```
+
+如果无法使用 tmux，或需要在前台持续查看日志，请执行：
+
+```bash
+pnpm gateway:watch:raw
+```
+
+如需以接近生产环境的方式在本地运行，请执行：
+
+```bash
+pnpm build
+node openclaw.mjs gateway --port 18789 --verbose
+```
+
+同一主机和端口只能运行一个 Gateway。除非已经有意配置远程访问和身份认证，否则必须保持默认的本机回环地址绑定。
+
+### 启动前端（Control UI）
+
+Gateway 启动后，在另一个终端中启动 Vite 开发服务器：
+
+```bash
+pnpm ui:dev --host 127.0.0.1
+```
+
+- 前端开发地址：`http://127.0.0.1:5173`
+- Gateway 提供的 UI/API 地址：`http://127.0.0.1:18789`
+- 前端修改后，如只需构建由 Gateway 提供的 UI，请执行：`pnpm ui:build`。
+
+### 启动验证
+
+```bash
+pnpm openclaw health
+```
+
+确认 Gateway 返回健康状态后，再打开对应的 UI 地址。修改插件、manifest 或其他进程级稳定元数据后，必须重启 Gateway。
+
 ## Start
 
 - Repo: `https://github.com/openclaw/openclaw`

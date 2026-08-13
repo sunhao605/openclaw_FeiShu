@@ -105,6 +105,15 @@ export class ChannelWizardController {
   }
 
   async start(channel: string | null): Promise<void> {
+    // One controller owns one gateway WizardSession. Re-entering start while
+    // that session is live would discard its id and leave setup admission stuck.
+    if (
+      this.sessionId ||
+      this.currentState.phase === "starting" ||
+      this.currentState.phase === "step"
+    ) {
+      return;
+    }
     const client = this.getClient();
     if (!client) {
       return;

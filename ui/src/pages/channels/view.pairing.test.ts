@@ -63,6 +63,7 @@ function createProps(overrides: Partial<ChannelsProps> = {}): ChannelsProps {
     configForm: null,
     configUiHints: {},
     configSaving: false,
+    configAutoSaveStatus: "idle",
     configFormDirty: false,
     showAdvancedSettings: false,
     nostrProfileFormState: null,
@@ -170,6 +171,41 @@ describe("channel DM access request views", () => {
     const container = renderInto(renderChannelPairingQueue(createProps()));
 
     expect(container.querySelectorAll("select.settings-select")).toHaveLength(2);
+  });
+
+  it("limits pairing accounts and requests to the curated channel surface", () => {
+    const feishuRequest = {
+      ...request,
+      requestId: "feishu-request",
+      channel: "feishu",
+      channelLabel: "Feishu",
+      accountId: "default",
+      accountLabel: "Feishu bot",
+      senderId: "ou_feishu_user",
+    };
+    const props = createProps({
+      visibleChannelIds: ["feishu"],
+      pairingSnapshot: {
+        ...createProps().pairingSnapshot!,
+        accounts: [
+          ...createProps().pairingSnapshot!.accounts,
+          {
+            channel: "feishu",
+            channelLabel: "Feishu",
+            accountId: "default",
+            accountLabel: "Feishu bot",
+            notifySupported: true,
+          },
+        ],
+        requests: [request, feishuRequest],
+      },
+    });
+    const container = renderInto(renderChannelPairingQueue(props));
+
+    expect(container.textContent).toContain("ou_feishu_user");
+    expect(container.textContent).not.toContain("+15551234567");
+    expect(container.textContent).not.toContain("WhatsApp");
+    expect(container.querySelector(".settings-count")?.textContent?.trim()).toBe("1");
   });
 
   it("disables every request action while one mutation is active", () => {

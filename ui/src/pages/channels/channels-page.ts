@@ -32,7 +32,8 @@ import { ChannelWizardHost } from "./wizard-host.ts";
 type NostrProfileFormState = ReturnType<typeof createNostrProfileFormState> | null;
 
 const CHANNEL_PAIRING_POLL_INTERVAL_MS = 30_000;
-const CHANNELS_DOCS_URL = "https://docs.openclaw.ai/channels";
+const FEISHU_CHANNEL_IDS = ["feishu"] as const;
+const CHANNELS_DOCS_URL = "https://docs.openclaw.ai/channels/feishu";
 
 type NostrOperation = {
   scope: GatewayConnectionScope;
@@ -643,6 +644,7 @@ class ChannelsPage extends OpenClawLightDomElement {
       </section>
       ${renderSettingsWorkspace(
         renderChannels({
+          visibleChannelIds: FEISHU_CHANNEL_IDS,
           connected: channels.connected,
           loading: channels.channelsLoading,
           snapshot: channels.channelsSnapshot,
@@ -668,6 +670,7 @@ class ChannelsPage extends OpenClawLightDomElement {
           configForm: config.configForm,
           configUiHints: config.configUiHints,
           configSaving: config.configSaving,
+          configAutoSaveStatus: config.configAutoSaveStatus,
           configFormDirty: config.configFormDirty,
           showAdvancedSettings: this.showAdvancedSettings,
           nostrProfileFormState: this.nostrProfileFormState,

@@ -26,6 +26,7 @@ import { resolveChannelAccounts } from "../../lib/channels/index.ts";
 import { formatRelativeTimestamp } from "../../lib/format.ts";
 import { renderChannelArt } from "./hub-meta.ts";
 import { renderChannelDetail } from "./view.detail.ts";
+import { renderFeishuDirectConfig } from "./view.feishu-config.ts";
 import { renderChannelPairingPrompt, renderChannelPairingQueue } from "./view.pairing.ts";
 import { channelEnabled, resolveChannelDisplayState } from "./view.shared.ts";
 import type { ChannelKey, ChannelsChannelData, ChannelsProps } from "./view.types.ts";
@@ -34,7 +35,7 @@ import { renderChannelWizard } from "./wizard-view.ts";
 type ChannelCardState = "running" | "configured" | "attention";
 
 export function renderChannels(props: ChannelsProps) {
-  const channelOrder = resolveChannelOrder(props.snapshot);
+  const channelOrder = resolveChannelOrder(props.snapshot, props.visibleChannelIds);
   const connected = channelOrder.filter((key) => channelEnabled(key, props));
   const available = channelOrder.filter((key) => !channelEnabled(key, props));
   const showingStaleSnapshot = Boolean(props.loading && props.snapshot && props.lastSuccessAt);
@@ -58,6 +59,9 @@ export function renderChannels(props: ChannelsProps) {
       ${props.lastError ? html`<div class="callout danger">${props.lastError}</div>` : nothing}
       ${props.setupBlockedByDirtyConfig && props.configFormDirty
         ? html`<div class="callout warn">${t("channels.hub.saveBeforeSetup")}</div>`
+        : nothing}
+      ${props.visibleChannelIds?.length === 1 && props.visibleChannelIds[0] === "feishu"
+        ? renderFeishuDirectConfig(props)
         : nothing}
       ${renderChannelPairingQueue(props)}
       ${renderSettingsSection(
@@ -98,7 +102,8 @@ export function renderChannels(props: ChannelsProps) {
           description: t("channels.hub.addSubtitle"),
         },
         html`
-          ${available.map((key) => renderAvailableRow(key, props))} ${renderBrowseAllRow(props)}
+          ${available.map((key) => renderAvailableRow(key, props))}
+          ${props.visibleChannelIds ? nothing : renderBrowseAllRow(props)}
         `,
       )}
     `)}
@@ -149,7 +154,15 @@ function buildChannelData(props: ChannelsProps): ChannelsChannelData {
   };
 }
 
-function resolveChannelOrder(snapshot: ChannelsStatusSnapshot | null): ChannelKey[] {
+function resolveChannelOrder(
+  snapshot: ChannelsStatusSnapshot | null,
+  visibleChannelIds?: readonly string[],
+): ChannelKey[] {
+  if (visibleChannelIds) {
+    // Product-curated channel surfaces stay stable even before a plugin has
+    // published status metadata, so setup remains reachable from an empty gateway.
+    return [...visibleChannelIds];
+  }
   if (snapshot?.channelMeta?.length) {
     return snapshot.channelMeta.map((entry) => entry.id);
   }
@@ -164,7 +177,7 @@ function resolveChannelLabel(snapshot: ChannelsStatusSnapshot | null, key: strin
   return (
     snapshot?.channelMeta?.find((entry) => entry.id === key)?.label ??
     (labels && Object.hasOwn(labels, key) ? labels[key] : undefined) ??
-    key
+    (key === "feishu" ? "Feishu" : key)
   );
 }
 

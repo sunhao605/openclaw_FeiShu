@@ -17,6 +17,13 @@ type ChannelHubMeta = {
 /** Static helper links: these are the services' own consoles, not config. */
 export function channelHubMeta(channelId: string): ChannelHubMeta {
   switch (channelId) {
+    case "feishu":
+      return {
+        setupLinks: [
+          { label: "Feishu Open Platform", url: "https://open.feishu.cn/app" },
+          { label: "Lark Developer", url: "https://open.larksuite.com/app" },
+        ],
+      };
     case "telegram":
       return {
         setupLinks: [

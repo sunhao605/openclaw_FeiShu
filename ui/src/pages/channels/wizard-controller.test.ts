@@ -78,6 +78,31 @@ describe("ChannelWizardController", () => {
     });
   });
 
+  it("does not replace an active wizard session with a second start", async () => {
+    const { controller, request } = createController(async (method) => {
+      if (method === "wizard.start") {
+        return { sessionId: "s-active", done: false, status: "running", step: tokenStep };
+      }
+      if (method === "wizard.cancel") {
+        return { status: "cancelled" };
+      }
+      throw new Error(`unexpected ${method}`);
+    });
+
+    await controller.start("feishu");
+    await controller.start("feishu");
+
+    expect(controller.state).toMatchObject({
+      phase: "step",
+      channel: "feishu",
+      step: { id: "step-token" },
+    });
+    expect(request.mock.calls.filter(([method]) => method === "wizard.start")).toHaveLength(1);
+
+    await controller.cancel();
+    expect(request).toHaveBeenCalledWith("wizard.cancel", { sessionId: "s-active" });
+  });
+
   it("advances gateway-owned progress without inventing user answers", async () => {
     let resolveProgress: ((value: unknown) => void) | undefined;
     let nextCount = 0;

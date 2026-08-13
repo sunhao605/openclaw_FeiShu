@@ -44,6 +44,7 @@ function createProps(snapshot: ChannelsProps["snapshot"]): ChannelsProps {
     configForm: null,
     configUiHints: {},
     configSaving: false,
+    configAutoSaveStatus: "idle",
     configFormDirty: false,
     showAdvancedSettings: false,
     nostrProfileFormState: null,
@@ -393,6 +394,129 @@ describe("channel detail", () => {
       }
     },
   );
+});
+
+describe("curated channel visibility", () => {
+  it("shows Feishu credentials directly and stages required values", () => {
+    const patches: Array<[Array<string | number>, unknown]> = [];
+    const props = createProps(null);
+    props.visibleChannelIds = ["feishu"];
+    props.configForm = { channels: { feishu: {} } };
+    props.onConfigPatch = (path, value) => patches.push([path, value]);
+
+    const container = document.createElement("div");
+    render(renderChannels(props), container);
+
+    const appId = container.querySelector<HTMLInputElement>("#feishu-app-id");
+    const appSecret = container.querySelector<HTMLInputElement>("#feishu-app-secret");
+    expect(appId).not.toBeNull();
+    expect(appSecret?.type).toBe("password");
+    expect(container.textContent).toContain("Required credentials");
+    expect(container.textContent).toContain("Defaults available");
+
+    appId!.value = "cli_example";
+    appId!.dispatchEvent(new InputEvent("input"));
+    appSecret!.value = "replacement-secret";
+    appSecret!.dispatchEvent(new InputEvent("input"));
+
+    expect(patches).toContainEqual([["channels", "feishu", "appId"], "cli_example"]);
+    expect(patches).toContainEqual([["channels", "feishu", "appSecret"], "replacement-secret"]);
+    expect(patches).toContainEqual([["channels", "feishu", "enabled"], true]);
+  });
+
+  it("shows webhook-only required fields only when webhook mode is selected", () => {
+    const props = createProps(null);
+    props.visibleChannelIds = ["feishu"];
+    props.configForm = {
+      channels: {
+        feishu: {
+          appId: "cli_example",
+          appSecret: "__OPENCLAW_REDACTED__",
+          connectionMode: "websocket",
+        },
+      },
+    };
+
+    const container = document.createElement("div");
+    render(renderChannels(props), container);
+    expect(container.querySelector("#feishu-verification-token")).toBeNull();
+
+    props.configForm = {
+      channels: {
+        feishu: {
+          appId: "cli_example",
+          appSecret: "__OPENCLAW_REDACTED__",
+          connectionMode: "webhook",
+        },
+      },
+    };
+    render(renderChannels(props), container);
+    expect(container.querySelector("#feishu-verification-token")).not.toBeNull();
+    expect(container.querySelector("#feishu-encrypt-key")).not.toBeNull();
+    expect(container.querySelector("#feishu-webhook-path")).not.toBeNull();
+  });
+
+  it("keeps a saved secret visibly masked and confirms autosave success", () => {
+    const props = createProps(null);
+    props.visibleChannelIds = ["feishu"];
+    props.configAutoSaveStatus = "saved";
+    props.configForm = {
+      channels: {
+        feishu: {
+          appId: "cli_example",
+          appSecret: "__OPENCLAW_REDACTED__",
+        },
+      },
+    };
+
+    const container = document.createElement("div");
+    render(renderChannels(props), container);
+
+    const appSecret = container.querySelector<HTMLInputElement>("#feishu-app-secret");
+    const preserved = container.querySelector(".feishu-secret-control__preserved");
+    expect(appSecret?.value).toBe("");
+    expect(preserved?.textContent).toContain("••••••••••••");
+    expect(preserved?.textContent).toContain("Saved");
+    expect(container.querySelector(".feishu-save-status--saved")?.textContent).toContain(
+      "Configuration saved",
+    );
+  });
+
+  it("renders only Feishu and removes the browse-all entry", () => {
+    const props = createProps({
+      ts: Date.now(),
+      channelOrder: ["whatsapp", "telegram", "feishu"],
+      channelLabels: { whatsapp: "WhatsApp", telegram: "Telegram", feishu: "Feishu" },
+      channels: {
+        whatsapp: { configured: true, running: true },
+        telegram: { configured: false },
+        feishu: { configured: false },
+      },
+      channelAccounts: {},
+      channelDefaultAccountId: {},
+    });
+    props.visibleChannelIds = ["feishu"];
+
+    const container = document.createElement("div");
+    render(renderChannels(props), container);
+
+    expect(container.textContent).toContain("Feishu");
+    expect(container.textContent).not.toContain("WhatsApp");
+    expect(container.textContent).not.toContain("Telegram");
+    expect(container.textContent).not.toContain("More channels");
+    expect(container.querySelectorAll(".channels-item")).toHaveLength(1);
+  });
+
+  it("keeps Feishu setup visible before channel metadata is available", () => {
+    const props = createProps(null);
+    props.visibleChannelIds = ["feishu"];
+
+    const container = document.createElement("div");
+    render(renderChannels(props), container);
+
+    expect(container.textContent).toContain("Feishu");
+    expect(container.querySelectorAll(".channels-item")).toHaveLength(1);
+  });
 });
 
 describe("channel display selectors", () => {

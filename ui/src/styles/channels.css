@@ -2,6 +2,315 @@
    detail overlay, and the guided setup wizard dialog. Everything else uses the
    shared settings design language. */
 
+/* ---------- direct Feishu configuration ---------- */
+
+.feishu-direct-form {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--border));
+  border-radius: var(--radius-xl);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 7%, transparent), transparent 42%),
+    var(--bg-elevated);
+  box-shadow: var(--shadow-sm);
+}
+
+.feishu-direct-form__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+
+.feishu-direct-form__eyebrow {
+  margin: 0 0 var(--space-1);
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.feishu-direct-form__heading h2,
+.feishu-direct-form__group-heading h3 {
+  margin: 0;
+  color: var(--text);
+}
+
+.feishu-direct-form__heading h2 {
+  font-size: var(--control-ui-text-xl);
+}
+
+.feishu-direct-form__heading p:not(.feishu-direct-form__eyebrow),
+.feishu-direct-form__group-heading p {
+  margin: var(--space-1) 0 0;
+  color: var(--muted);
+  font-size: var(--control-ui-text-sm);
+  line-height: 1.5;
+}
+
+.feishu-direct-form__group {
+  padding: var(--space-5);
+}
+
+.feishu-direct-form__group + .feishu-direct-form__group {
+  border-top: 1px solid var(--border);
+}
+
+.feishu-direct-form__group--defaults {
+  background: color-mix(in srgb, var(--bg) 54%, transparent);
+}
+
+.feishu-direct-form__group-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.feishu-direct-form__group-heading h3 {
+  font-size: var(--control-ui-text-md);
+}
+
+.feishu-direct-form__count,
+.feishu-direct-form__badge {
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 8px;
+  color: var(--muted);
+  background: var(--bg);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+
+.feishu-direct-form__count,
+.feishu-direct-form__badge--required {
+  border-color: color-mix(in srgb, var(--danger) 42%, var(--border));
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 8%, var(--bg));
+}
+
+.feishu-direct-form__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.feishu-direct-form__field {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-2);
+}
+
+.feishu-direct-form__label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  color: var(--text);
+  font-size: var(--control-ui-text-sm);
+  font-weight: 650;
+}
+
+.feishu-direct-form__field .settings-input,
+.feishu-direct-form__field select {
+  width: 100%;
+}
+
+.feishu-secret-control {
+  position: relative;
+  display: block;
+}
+
+.feishu-secret-control__preserved {
+  position: absolute;
+  inset: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  border-radius: calc(var(--radius-md) - 1px);
+  padding: 0 12px;
+  pointer-events: none;
+  color: var(--text);
+  background: var(--input);
+}
+
+.feishu-secret-control:focus-within .feishu-secret-control__preserved {
+  display: none;
+}
+
+.feishu-secret-control__dots {
+  overflow: hidden;
+  font-family: var(--mono);
+  letter-spacing: 0.08em;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+
+.feishu-secret-control__saved {
+  flex: 0 0 auto;
+  color: var(--ok);
+  font-size: var(--control-ui-text-xs);
+  font-weight: 700;
+}
+
+.feishu-direct-form__help {
+  color: var(--muted);
+  font-size: var(--control-ui-text-xs);
+  line-height: 1.45;
+}
+
+.feishu-direct-form__conditional {
+  margin-top: var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--warn) 35%, var(--border));
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  background: color-mix(in srgb, var(--warn) 6%, var(--bg));
+}
+
+.feishu-direct-form__conditional-title {
+  margin: 0 0 var(--space-3);
+  color: var(--text);
+  font-size: var(--control-ui-text-sm);
+  font-weight: 700;
+}
+
+.feishu-save-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  animation: feishu-save-status-in 180ms ease-out;
+}
+
+.feishu-save-status > div {
+  display: grid;
+  gap: 2px;
+}
+
+.feishu-save-status strong {
+  color: var(--text);
+  font-size: var(--control-ui-text-sm);
+}
+
+.feishu-save-status span:not(.feishu-save-status__indicator, .feishu-save-status__check) {
+  color: var(--muted);
+  font-size: var(--control-ui-text-xs);
+}
+
+.feishu-save-status--saved {
+  border-color: color-mix(in srgb, var(--ok) 38%, var(--border));
+  background: var(--ok-subtle);
+}
+
+.feishu-save-status--saving {
+  border-color: color-mix(in srgb, var(--info) 34%, var(--border));
+  background: var(--info-subtle);
+}
+
+.feishu-save-status--error {
+  border-color: color-mix(in srgb, var(--danger) 38%, var(--border));
+  background: var(--danger-subtle);
+}
+
+.feishu-save-status__check {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--bg);
+  background: var(--ok);
+  font-weight: 800;
+}
+
+.feishu-save-status--error .feishu-save-status__check {
+  background: var(--danger);
+}
+
+.feishu-save-status__indicator {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+  border: 2px solid color-mix(in srgb, var(--info) 28%, transparent);
+  border-top-color: var(--info);
+  border-radius: 50%;
+  animation: feishu-save-status-spin 700ms linear infinite;
+}
+
+@keyframes feishu-save-status-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes feishu-save-status-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.feishu-direct-form__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.feishu-direct-form__actions > div:last-child {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.feishu-direct-form__readiness {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--muted);
+  font-size: var(--control-ui-text-xs);
+}
+
+.feishu-direct-form__readiness > span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--warn);
+}
+
+.feishu-direct-form__readiness > span.is-ready {
+  background: var(--ok);
+}
+
+@media (max-width: 720px) {
+  .feishu-direct-form__heading,
+  .feishu-direct-form__group-heading,
+  .feishu-direct-form__actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .feishu-direct-form__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feishu-direct-form__actions > div:last-child {
+    justify-content: flex-end;
+  }
+}
+
 /* Row with a leading 44px art tile (mirrors the plugins hub row anatomy). */
 .channels-empty {
   display: grid;

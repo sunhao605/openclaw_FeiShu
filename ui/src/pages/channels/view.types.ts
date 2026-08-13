@@ -15,6 +15,7 @@ import type {
   TelegramStatus,
   WhatsAppStatus,
 } from "../../api/types.ts";
+import type { ConfigAutoSaveStatus } from "../../lib/config/index.ts";
 import type { NostrProfileFormState } from "./view.nostr-profile-form.ts";
 import type { ChannelWizardState } from "./wizard-controller.ts";
 
@@ -28,6 +29,8 @@ export type ChannelPairingPrompt = {
 };
 
 export type ChannelsProps = {
+  /** Limits the hub and pairing queue to an operator-selected channel surface. */
+  visibleChannelIds?: readonly string[];
   connected: boolean;
   loading: boolean;
   snapshot: ChannelsStatusSnapshot | null;
@@ -53,6 +56,7 @@ export type ChannelsProps = {
   configForm: Record<string, unknown> | null;
   configUiHints: ConfigUiHints;
   configSaving: boolean;
+  configAutoSaveStatus: ConfigAutoSaveStatus;
   configFormDirty: boolean;
   showAdvancedSettings: boolean;
   nostrProfileFormState: NostrProfileFormState | null;

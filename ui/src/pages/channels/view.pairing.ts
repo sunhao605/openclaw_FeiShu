@@ -29,15 +29,31 @@ function selectValue(event: Event): string | null {
   return value || null;
 }
 
+function isVisibleChannel(channel: string, props: ChannelsProps): boolean {
+  return !props.visibleChannelIds || props.visibleChannelIds.includes(channel);
+}
+
+function visiblePairingAccounts(props: ChannelsProps): ChannelsPairingAccount[] {
+  return (props.pairingSnapshot?.accounts ?? []).filter((account) =>
+    isVisibleChannel(account.channel, props),
+  );
+}
+
+function visiblePairingRequests(props: ChannelsProps): ChannelsPairingRequest[] {
+  return (props.pairingSnapshot?.requests ?? []).filter((request) =>
+    isVisibleChannel(request.channel, props),
+  );
+}
+
 function filteredAccounts(props: ChannelsProps): ChannelsPairingAccount[] {
-  const accounts = props.pairingSnapshot?.accounts ?? [];
+  const accounts = visiblePairingAccounts(props);
   return props.pairingChannelFilter
     ? accounts.filter((account) => account.channel === props.pairingChannelFilter)
     : accounts;
 }
 
 function filteredRequests(props: ChannelsProps): ChannelsPairingRequest[] {
-  return (props.pairingSnapshot?.requests ?? []).filter((request) => {
+  return visiblePairingRequests(props).filter((request) => {
     if (props.pairingChannelFilter && request.channel !== props.pairingChannelFilter) {
       return false;
     }
@@ -49,7 +65,7 @@ function filteredRequests(props: ChannelsProps): ChannelsPairingRequest[] {
 }
 
 function renderFilters(props: ChannelsProps) {
-  const accounts = props.pairingSnapshot?.accounts ?? [];
+  const accounts = visiblePairingAccounts(props);
   const channels = Array.from(
     new Map(accounts.map((account) => [account.channel, account.channelLabel])).entries(),
   ).toSorted((left, right) => left[1].localeCompare(right[1]));
@@ -153,10 +169,10 @@ function renderRequest(request: ChannelsPairingRequest, props: ChannelsProps) {
 
 export function renderChannelPairingQueue(props: ChannelsProps) {
   const snapshot = props.canManagePairing ? props.pairingSnapshot : null;
-  const accounts = snapshot?.accounts ?? [];
+  const accounts = snapshot ? visiblePairingAccounts(props) : [];
   const requests = props.canManagePairing ? filteredRequests(props) : [];
   const hasFilter = Boolean(props.pairingChannelFilter || props.pairingAccountFilter);
-  const count = snapshot?.requests.length ?? 0;
+  const count = snapshot ? visiblePairingRequests(props).length : 0;
   return html`
     <div id="channels-pairing-requests">
       ${renderSettingsSection(
